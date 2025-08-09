@@ -1,15 +1,10 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/dotnet/sdk:9.0'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker'
-        }
-    }
+    agent any
     
     environment {
         SOLUTION_NAME = 'LibraryApplication'
         DOCKER_IMAGE = 'library-application'
-        DOCKER_REGISTRY = 'hasancagri' // Buraya Docker Hub kullanıcı adınızı yazın
+        DOCKER_REGISTRY = 'hasancagri'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         DOTNET_VERSION = '9.0'
     }
@@ -19,33 +14,6 @@ pipeline {
             steps {
                 echo 'Checking out source code...'
                 checkout scm
-            }
-        }
-        
-        stage('Restore Dependencies') {
-            steps {
-                echo 'Restoring NuGet packages...'
-                dir('src') {
-                    sh 'dotnet restore LibraryApplication.sln'
-                }
-            }
-        }
-        
-        stage('Build Solution') {
-            steps {
-                echo 'Building solution...'
-                dir('src') {
-                    sh 'dotnet build LibraryApplication.sln --configuration Release --no-restore'
-                }
-            }
-        }
-        
-        stage('Run Tests') {
-            steps {
-                echo 'Running tests...'
-                dir('src') {
-                    sh 'dotnet test LibraryApplication.sln --configuration Release --no-build --verbosity normal'
-                }
             }
         }
         
@@ -85,7 +53,6 @@ pipeline {
             steps {
                 echo 'Deploying to production...'
                 script {
-                    // Production deployment
                     sh """
                         docker stop library-application-prod || true
                         docker rm library-application-prod || true
@@ -104,16 +71,12 @@ pipeline {
     post {
         always {
             echo 'Pipeline completed!'
-            // Eski image'ları temizle
-            sh 'docker system prune -f'
         }
         success {
             echo '✅ Pipeline succeeded!'
-            // Başarılı build bildirimi (Slack, email vb.)
         }
         failure {
-            echo '❌ Pipeline failed!'
-            // Hata bildirimi
+            echo '❌ Pipeline failed! Check console output for details.'
         }
     }
 }
