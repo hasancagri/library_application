@@ -21,6 +21,7 @@ public class BookManager
             new Book { Id = 10, Title = "İnce Memed", Author = "Yaşar Kemal" },
             new Book { Id = 11, Title = "Kayıp Zamanın İzinde", Author = "Marcel Proust" },
             new Book { Id = 12, Title = "Savaş ve Barış", Author = "Lev Tolstoy" },
+            new Book { Id = 13, Title = "Yalnızız", Author="Peyami Safa" }
         });
     }
 
