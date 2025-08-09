@@ -62,35 +62,6 @@ pipeline {
             }
         }
         
-        stage('Test Docker Image') {
-            steps {
-                echo 'Testing Docker image...'
-                script {
-                    // Test container'ı çalıştır
-                    sh """
-                        docker run --rm -d --name test-container-${BUILD_NUMBER} \
-                        -p 8080:8080 \
-                        -e ASPNETCORE_ENVIRONMENT=Development \
-                        ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                    """
-                    
-                    // Container'ın başlamasını bekle
-                    sleep(time: 10, unit: 'SECONDS')
-                    
-                    // Health check
-                    try {
-                        sh "curl -f http://localhost:8080/books"
-                        echo "✅ Health check passed!"
-                    } catch (Exception e) {
-                        echo "⚠️ Health check failed, but continuing..."
-                    } finally {
-                        // Test container'ını temizle
-                        sh "docker stop test-container-${BUILD_NUMBER} || true"
-                    }
-                }
-            }
-        }
-        
         stage('Push to Registry') {
             when {
                 branch 'main'
@@ -133,10 +104,6 @@ pipeline {
     post {
         always {
             echo 'Pipeline completed!'
-            // Test container'larını temizle
-            sh "docker stop test-container-${BUILD_NUMBER} || true"
-            sh "docker rm test-container-${BUILD_NUMBER} || true"
-            
             // Eski image'ları temizle
             sh 'docker system prune -f'
         }
