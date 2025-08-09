@@ -18,7 +18,9 @@ public class BookManager
             new Book { Id = 7, Title = "Gurur ve Önyargı", Author = "Jane Austen" },
             new Book { Id = 8, Title = "Bülbülü Öldürmek", Author = "Harper Lee" },
             new Book { Id = 9, Title = "Catcher in the Rye", Author = "J.D. Salinger" },
-            new Book { Id = 10, Title = "İnce Memed", Author = "Yaşar Kemal" }
+            new Book { Id = 10, Title = "İnce Memed", Author = "Yaşar Kemal" },
+            new Book { Id = 11, Title = "Kayıp Zamanın İzinde", Author = "Marcel Proust" },
+            new Book { Id = 12, Title = "Savaş ve Barış", Author = "Lev Tolstoy" },
         });
     }
 
