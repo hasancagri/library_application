@@ -11,7 +11,7 @@ pipeline {
             stages {
                 stage('LIBRARY_MODULE - Build/Push Image and Deploy') {
                     steps {
-                        sh("docker build  --build-arg MODE=${params.MODE} -t hasancagri/library-webapi:$TAG -f src/Presentation/WebApi/Dockerfile .")
+                        sh("docker build --build-arg MODE=${params.MODE} -t hasancagri/library-webapi:$TAG -f src/Presentation/WebApi/Dockerfile .")
                         sh("docker push hasancagri/library-webapi:$TAG")
                     }
                 }
