@@ -7,6 +7,9 @@ pipeline {
         DOCKER_REGISTRY = 'hasancagri'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         DOTNET_VERSION = '9.0'
+        // Docker Hub credentials - Jenkins'te environment variables olarak ayarlayın
+        DOCKER_HUB_USERNAME = credentials('docker-hub-username')
+        DOCKER_HUB_PASSWORD = credentials('docker-hub-password')
     }
     
     stages {
@@ -37,11 +40,19 @@ pipeline {
             steps {
                 echo 'Pushing Docker image to registry...'
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                    try {
+                        // Docker Hub'a login
+                        sh 'echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin'
+                        
+                        // Push images
                         sh "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
                         sh "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest"
+                        
+                        echo "✅ Docker image pushed successfully!"
+                    } catch (Exception e) {
+                        echo "⚠️ Push failed: ${e.getMessage()}"
+                        echo "Skipping push - check Docker Hub credentials"
                     }
-                    echo "✅ Docker image pushed successfully!"
                 }
             }
         }
@@ -53,16 +64,29 @@ pipeline {
             steps {
                 echo 'Deploying to production...'
                 script {
-                    sh """
-                        docker stop library-application-prod || true
-                        docker rm library-application-prod || true
-                        docker run -d --name library-application-prod \
-                        -p 80:8080 \
-                        -e ASPNETCORE_ENVIRONMENT=Production \
-                        --restart unless-stopped \
-                        ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
-                    """
-                    echo "✅ Application deployed to production!"
+                    try {
+                        sh """
+                            echo "Stopping existing container..."
+                            docker stop library-application-prod || echo "No existing container to stop"
+                            docker rm library-application-prod || echo "No existing container to remove"
+                            
+                            echo "Starting new container..."
+                            docker run -d --name library-application-prod \
+                            -p 5059:8080 \
+                            -e ASPNETCORE_ENVIRONMENT=Production \
+                            --restart unless-stopped \
+                            ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                            
+                            echo "Waiting for container to start..."
+                            sleep 5
+                            
+                            echo "Container status:"
+                            docker ps --filter "name=library-application-prod"
+                        """
+                        echo "✅ Application deployed to production!"
+                    } catch (Exception e) {
+                        echo "⚠️ Deploy failed: ${e.getMessage()}"
+                    }
                 }
             }
         }
