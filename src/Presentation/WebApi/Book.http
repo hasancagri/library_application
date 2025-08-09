@@ -1,0 +1,37 @@
+@Url=http://localhost:5059
+
+
+### Get all books (READ)
+GET {{Url}}/books
+Content-Type: application/json
+
+### Get book by ID (READ)
+GET {{Url}}/books/1
+Content-Type: application/json
+
+###
+POST {{Url}}/books
+Content-Type: application/json
+
+{
+    "id": 11,
+    "title": "Çalıkuşu",
+    "author": "Reşat Nuri Güntekin"
+}
+
+###
+
+
+### Delete a book (DELETE)
+DELETE {{Url}}/books/1
+Content-Type: application/json
+
+### Test sequence: Create and then delete
+POST {{Url}}/books
+Content-Type: application/json
+
+{
+    "id": 14,
+    "title": "Test Kitabı",
+    "author": "Test Yazarı"
+}
